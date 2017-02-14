@@ -1,0 +1,22 @@
+#! /bin/bash
+DB_NAME = "cwitterdb2"
+DB_USER = "chloewitter"
+DB_PASSWORD = "269Ferry"
+DB_CHARSET = "utf8"
+DB_COLLATE = ""
+aws rds create-db-instance --db-name cwitterdbtest --db-instance-identifier chloetest \--allocated-storage 20 --db-intance-class db.t2.micro --enginee mysql \--master-username cwitter --master-user-password 269Ferry \--vpc-security-group-ids sg-922e43ee \--no-publicly-accessible
+DB_HOST = aws rds describe-db-instances | jq.DBInstance[].Endpoint.Address
+aws ec2 run-instances --image-id ami-6edd3078 --count 1 --instance-type t2.micro --key-name cwitter --security-groups "allow ssh and http"
+apt-get update
+apt-get install apache2 php php-mysql libapache2-mod-php7.0 -y
+service apache2 restart
+wget https://wordpress.org/latest.tar.gz -O/tmp/wp.tgz
+rm /var/www/html/index.html
+tar xfzC /tmp/wp.tgz /var/www/html
+mv wordpress/* /var/www/html/
+sudo chown www-data: /var/www/html/ -R
+cd /var/www/html/
+sed -i 's/database_name_here/cwitterdb2/g' wp-config.php
+sed -i 's/password_here/269Ferry/g' wp-config.php
+sed -i 's/username_here/chloewitter/g' wp-config.php
+sed -i 's/localhost/mydbhost.aws/g' wp-config.php
